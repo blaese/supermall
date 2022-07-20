@@ -3,11 +3,17 @@
 		<nav-bar class="home-nav">
 			<div slot="center">购物街</div>
 		</nav-bar>
-		<home-swiper :banners="banners"></home-swiper>
-		<recommend-view :recommends="recommends"></recommend-view>
-		<feature-view />
-		<tab-control class="tab-control" :titles="['流行', '新款', '精选']" @tabClick="tabClick"></tab-control>
-		<goods-list :goods="showGoods"></goods-list>
+
+		<scroll class="content" ref="scroll" :probe-type="3" @scroll="contentScroll" :pull-up-load="true"
+			@pullingUp="loadMore">
+			<home-swiper :banners="banners"></home-swiper>
+			<recommend-view :recommends="recommends"></recommend-view>
+			<feature-view />
+			<tab-control class="tab-control" :titles="['流行', '新款', '精选']" @tabClick="tabClick"></tab-control>
+			<goods-list :goods="showGoods"></goods-list>
+		</scroll>
+
+		<back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
 	</div>
 </template>
 
@@ -19,6 +25,8 @@ import FeatureView from './childComps/FeatureView.vue'
 import NavBar from 'components/common/navbar/NavBar.vue'
 import TabControl from 'components/content/tabControl/TabControl.vue'
 import GoodsList from 'components/content/goods/GoodsList.vue'
+import Scroll from 'components/common/scroll/Scroll.vue'
+import BackTop from 'components/content/backTop/BackTop.vue'
 
 import {
 	getHomeMultidata,
@@ -33,7 +41,9 @@ export default {
 		FeatureView,
 		NavBar,
 		TabControl,
-		GoodsList
+		GoodsList,
+		Scroll,
+		BackTop
 	},
 	data () {
 		return {
@@ -44,7 +54,8 @@ export default {
 				'new': { page: 0, list: [] },
 				'sell': { page: 0, list: [] },
 			},
-			currentType: 'pop'
+			currentType: 'pop',
+			isShowBackTop: false
 		}
 	},
 	computed: {
@@ -75,6 +86,15 @@ export default {
 					break
 			}
 		},
+		backClick () {
+			this.$refs.scroll.scrollTo(0, 0)
+		},
+		contentScroll (position) {
+			this.isShowBackTop = (-position.y) > 1000
+		},
+		loadMore () {
+			this.getHomeGoods(this.currentType)
+		},
 		/* 网络请求的相关方法 */
 		getHomeMultidata () {
 			getHomeMultidata().then(res => {
@@ -88,15 +108,19 @@ export default {
 				// 不能直接把数组push进去，否则会把数组当成一个元素
 				this.goods[type].list.push(...res.data.list)
 				this.goods[type].page += 1
+
+				// 每次请求完数据应该调用finishPullUp()才能保证下一页也能加载
+				this.$refs.scroll.finishPullUp()
 			})
 		}
-	},
+	}
 }
 </script>
 
 <style scoped>
 #home {
-	padding-top: 44px;
+	position: relative;
+	height: 100vh;
 }
 
 .home-nav {
@@ -114,5 +138,16 @@ export default {
 	top: 44px;
 	z-index: 9;
 	background-color: #fff;
+}
+
+.content {
+	/* position: absolute;
+	top: 44px;
+	bottom: 49px;
+	left: 0;
+	right: 0; */
+	margin-top: 44px;
+	height: calc(100% - 93px);
+	overflow: hidden;
 }
 </style>
