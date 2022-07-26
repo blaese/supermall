@@ -39,17 +39,26 @@ export default {
 			this.$emit('scroll', position)
 		})
 
-		this.scroll.on('pullingUp', () => {
-			this.$emit('pullingUp')
-		})
+		// 3.监听scroll滚动到底部
+		if (this.pullUpLoad) {
+			this.scroll.on('pullingUp', () => {
+				this.$emit('pullingUp')
+			})
+		}
 	},
 	methods: {
 		// ES6语法：time默认是500毫秒，在time时间内滚动到(x,y)位置
 		scrollTo (x, y, time = 500) {
-			this.scroll.scrollTo(x, y, time)
+			this.scroll && this.scroll.scrollTo(x, y, time)
 		},
 		finishPullUp () {
 			this.scroll.finishPullUp()
+		},
+		refresh () {
+			this.scroll && this.scroll.refresh()
+		},
+		getScrollY () {
+			return this.scroll ? this.scroll.y : 0
 		}
 	},
 }
