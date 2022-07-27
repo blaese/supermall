@@ -7,6 +7,8 @@
 			<detail-shop-info :shop="shop"></detail-shop-info>
 			<detail-goods-info :detail-info="detailInfo" @imageLoad="imageLoad"></detail-goods-info>
 			<detail-params-info :params-info="paramsInfo"></detail-params-info>
+			<detail-comment-info :comment-info="commentInfo"></detail-comment-info>
+			<goods-list :goods="recommends"></goods-list>
 		</scroll>
 	</div>
 </template>
@@ -18,10 +20,13 @@ import DetailBaseInfo from './childComps/DetailBaseInfo.vue'
 import DetailShopInfo from './childComps/DetailShopInfo.vue'
 import DetailGoodsInfo from './childComps/DetailGoodsInfo.vue'
 import DetailParamsInfo from './childComps/DetailParamsInfo.vue'
+import DetailCommentInfo from './childComps/DetailCommentInfo.vue'
 
 import Scroll from 'components/common/scroll/Scroll.vue'
+import GoodsList from 'components/content/goods/GoodsList.vue'
 
-import { getDetail, Goods, Shop, GoodsParams } from 'network/detail'
+import { getDetail, getRecommend, Goods, Shop, GoodsParams } from 'network/detail'
+import { itemListenerMixin } from 'common/mixin'
 
 export default {
 	name: 'Detail',
@@ -32,8 +37,11 @@ export default {
 		DetailShopInfo,
 		DetailGoodsInfo,
 		DetailParamsInfo,
-		Scroll
+		DetailCommentInfo,
+		Scroll,
+		GoodsList
 	},
+	mixins: [itemListenerMixin],
 	data () {
 		return {
 			iid: null,
@@ -41,7 +49,9 @@ export default {
 			goods: {},
 			shop: {},
 			detailInfo: {},
-			paramsInfo: {}
+			paramsInfo: {},
+			commentInfo: {},
+			recommends: []
 		}
 	},
 	created () {
@@ -51,7 +61,6 @@ export default {
 		// 2.根据iid请求详情数据
 		getDetail(this.iid).then(res => {
 			const data = res.result
-			console.log(data);
 			// 1.获取顶部的轮播图数据
 			this.topImages = data.itemInfo.topImages
 
@@ -66,7 +75,20 @@ export default {
 
 			// 5.获取商品参数信息
 			this.paramsInfo = new GoodsParams(data.itemParams.info, data.itemParams.rule)
+
+			// 6.获取评论信息
+			if (data.rate.cRate !== 0) {
+				this.commentInfo = data.rate.list[0]
+			}
 		})
+
+		// 3.获取详情数据
+		getRecommend().then(res => {
+			this.recommends = res.data.list
+		})
+	},
+	destroyed () {
+		this.$bus.$off('itemImageLoad', this.itemImgListener)
 	},
 	methods: {
 		imageLoad () {
