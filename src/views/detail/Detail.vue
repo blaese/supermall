@@ -51,6 +51,7 @@ export default {
 		// 2.根据iid请求详情数据
 		getDetail(this.iid).then(res => {
 			const data = res.result
+			console.log(data);
 			// 1.获取顶部的轮播图数据
 			this.topImages = data.itemInfo.topImages
 
