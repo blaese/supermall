@@ -17,10 +17,12 @@ export default {
 		}
 	},
 	props: {
+		// probeType 侦测滚动
 		probeType: {
 			type: Number,
 			default: 0
 		},
+		// pullUpLoad 触发上拉事件的阈值
 		pullUpLoad: {
 			type: Boolean,
 			default: false

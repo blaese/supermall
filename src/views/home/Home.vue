@@ -16,7 +16,7 @@
 			<goods-list :goods="showGoods"></goods-list>
 		</scroll>
 
-		<back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
+		<back-top @click.native="backTop" v-show="isShowBackTop"></back-top>
 	</div>
 </template>
 
@@ -29,11 +29,10 @@ import NavBar from 'components/common/navbar/NavBar.vue'
 import TabControl from 'components/content/tabControl/TabControl.vue'
 import GoodsList from 'components/content/goods/GoodsList.vue'
 import Scroll from 'components/common/scroll/Scroll.vue'
-import BackTop from 'components/content/backTop/BackTop.vue'
 
 import { getHomeMultidata, getHomeGoods } from 'network/home'
-import { debounce } from 'common/utils'
-import { itemListenerMixin } from 'common/mixin'
+import { POP, NEW, SELL } from "common/const";
+import { itemListenerMixin, backTopMixin } from 'common/mixin'
 
 export default {
 	name: 'Home',
@@ -44,10 +43,9 @@ export default {
 		NavBar,
 		TabControl,
 		GoodsList,
-		Scroll,
-		BackTop
+		Scroll
 	},
-	mixins: [itemListenerMixin],
+	mixins: [itemListenerMixin, backTopMixin],
 	data () {
 		return {
 			banners: [],
@@ -57,8 +55,7 @@ export default {
 				'new': { page: 0, list: [] },
 				'sell': { page: 0, list: [] },
 			},
-			currentType: 'pop',
-			isShowBackTop: false,
+			currentType: POP,
 			tabOffsetTop: 0,
 			isTabFixed: false,
 			saveY: 0
@@ -73,9 +70,9 @@ export default {
 		// 1.请求多个数据
 		this.getHomeMultidata()
 		// 2.请求商品数据
-		this.getHomeGoods('pop')
-		this.getHomeGoods('new')
-		this.getHomeGoods('sell')
+		this.getHomeGoods(POP)
+		this.getHomeGoods(NEW)
+		this.getHomeGoods(SELL)
 	},
 	activated () {
 		this.$refs.scroll.scrollTo(0, this.saveY, 0)
@@ -92,25 +89,23 @@ export default {
 		tabClick (index) {
 			switch (index) {
 				case 0:
-					this.currentType = 'pop'
+					this.currentType = POP
 					break
 				case 1:
-					this.currentType = 'new'
+					this.currentType = NEW
 					break
 				case 2:
-					this.currentType = 'sell'
+					this.currentType = SELL
 					break
 			}
 			// 点击其中一个tabControl，两个组件的currentIndex都同时变化
 			this.$refs.tabControl1.currentIndex = index;
 			this.$refs.tabControl2.currentIndex = index;
 		},
-		backClick () {
-			this.$refs.scroll.scrollTo(0, 0)
-		},
 		contentScroll (position) {
 			// 1.判断BackTop是否显示
-			this.isShowBackTop = (-position.y) > 800
+			// this.isShowBackTop = (-position.y) >= TOP_DISTANCE
+			this.listenShowBackTop(position)
 
 			// 2.决定tabControl是否吸顶(是否有position:fixed)
 			this.isTabFixed = (-position.y) > this.tabOffsetTop

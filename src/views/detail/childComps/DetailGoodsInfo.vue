@@ -31,17 +31,9 @@ export default {
 	},
 	methods: {
 		imageLoad () {
-			// 判断, 所有的图片都加载完了, 只进行一次回调
-			if (++this.counter === this.imagesLength) {
-				this.$emit('imageLoad')
-			}
+			this.$emit('imageLoad')
 		}
 	},
-	watch: {
-		detailInfo () {
-			this.imagesLength = this.detailInfo.detailImage[0].list.length
-		}
-	}
 }
 </script>
 
