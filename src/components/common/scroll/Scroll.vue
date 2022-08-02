@@ -26,6 +26,12 @@ export default {
 		pullUpLoad: {
 			type: Boolean,
 			default: false
+		},
+		data: {
+			type: Array,
+			default () {
+				return []
+			}
 		}
 	},
 	mounted () {
@@ -63,8 +69,17 @@ export default {
 			return this.scroll ? this.scroll.y : 0
 		}
 	},
+	watch: {
+		// 数据一旦发生变化，页面刷新
+		data () {
+			setTimeout(this.refresh, 20)
+		}
+	}
 }
 </script>
 
 <style scoped>
+.wrapper {
+	overflow: hidden;
+}
 </style>

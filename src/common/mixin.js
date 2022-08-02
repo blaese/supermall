@@ -1,6 +1,8 @@
 import { debounce } from 'common/utils'
 import { TOP_DISTANCE } from "common/const";
 
+import { POP, NEW, SELL } from "./const";
+
 import BackTop from 'components/content/backTop/BackTop.vue'
 
 export const itemListenerMixin = {
@@ -36,4 +38,27 @@ export const backTopMixin = {
 			this.isShowBackTop = (-position.y) >= TOP_DISTANCE
 		}
 	},
+}
+
+export const tabControlMixin = {
+	data: function () {
+		return {
+			currentType: POP
+		}
+	},
+	methods: {
+		tabClick (index) {
+			switch (index) {
+				case 0:
+					this.currentType = POP
+					break
+				case 1:
+					this.currentType = NEW
+					break
+				case 2:
+					this.currentType = SELL
+					break
+			}
+		}
+	}
 }
